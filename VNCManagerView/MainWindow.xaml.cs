@@ -398,32 +398,32 @@ namespace VNCManagerView
         }
 
         private Dictionary<TreeNodeViewModel, bool> GetParentExpansionStates(TreeNodeViewModel node)
-{
-    var states = new Dictionary<TreeNodeViewModel, bool>();
-    var current = node.Parent;
-    
-    while (current != null)
-    {
-        states[current] = current.IsExpanded;
-        current = current.Parent;
-    }
-    
-    return states;
-}
-
-private void RestoreParentExpansionStates(TreeNodeViewModel node, Dictionary<TreeNodeViewModel, bool> states)
-{
-    var current = node.Parent;
-    
-    while (current != null)
-    {
-        if (states.TryGetValue(current, out var wasExpanded))
         {
-            current.IsExpanded = wasExpanded;
+            var states = new Dictionary<TreeNodeViewModel, bool>();
+            var current = node.Parent;
+    
+            while (current != null)
+            {
+                states[current] = current.IsExpanded;
+                current = current.Parent;
+            }
+    
+            return states;
         }
-        current = current.Parent;
-    }
-}
+
+        private void RestoreParentExpansionStates(TreeNodeViewModel node, Dictionary<TreeNodeViewModel, bool> states)
+        {
+            var current = node.Parent;
+    
+            while (current != null)
+            {
+                if (states.TryGetValue(current, out var wasExpanded))
+                {
+                    current.IsExpanded = wasExpanded;
+                }
+                current = current.Parent;
+            }
+        }
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
@@ -467,28 +467,29 @@ private void RestoreParentExpansionStates(TreeNodeViewModel node, Dictionary<Tre
                     break;
 
                 case NodeType.Plant:
-                    var deviceDialog = new DeviceDialog(GetCurrentBranches()) { Owner = this };
+                    // Pass the specific branch and plant to the dialog
+                    var deviceDialog = new DeviceDialog(GetCurrentBranches(), null, parentNode.Branch, parentNode.Plant) { Owner = this };
                     if (deviceDialog.ShowDialog() == true)
-            {
-                parentNode.Plant.Devices.Add(deviceDialog.Device);
-                
-                // Create new node and add to tree
-                var newDeviceNode = new TreeNodeViewModel
-                {
-                    Name = deviceDialog.Device.Name,
-                    Type = NodeType.Device,
-                    Device = deviceDialog.Device,
-                    Plant = parentNode.Plant,
-                    Branch = parentNode.Branch,
-                    Icon = "💻",
-                    IconBackground = new SolidColorBrush(Color.FromRgb(52, 73, 94)),
-                    StatusColor = GetDeviceStatusColor(deviceDialog.Device),
-                    ConnectionInfo = $"{deviceDialog.Device.IP}:{deviceDialog.Device.Port}",
-                    Parent = parentNode
-                };
-                
-                parentNode.Children.Add(newDeviceNode);
-                SaveConfiguration(GetCurrentBranches());
+                    {
+                        parentNode.Plant.Devices.Add(deviceDialog.Device);
+
+                        // Create new node and add to tree
+                        var newDeviceNode = new TreeNodeViewModel
+                        {
+                            Name = deviceDialog.Device.Name,
+                            Type = NodeType.Device,
+                            Device = deviceDialog.Device,
+                            Plant = parentNode.Plant,
+                            Branch = parentNode.Branch,
+                            Icon = "💻",
+                            IconBackground = new SolidColorBrush(Color.FromRgb(52, 73, 94)),
+                            StatusColor = GetDeviceStatusColor(deviceDialog.Device),
+                            ConnectionInfo = $"{deviceDialog.Device.IP}:{deviceDialog.Device.Port}",
+                            Parent = parentNode
+                        };
+
+                        parentNode.Children.Add(newDeviceNode);
+                        SaveConfiguration(GetCurrentBranches());
                     }
                     break;
             }
@@ -553,7 +554,7 @@ private void RestoreParentExpansionStates(TreeNodeViewModel node, Dictionary<Tre
                         node.UpdateFromDevice(deviceDialog.Device);
                         SaveConfiguration(GetCurrentBranches());
 
-                        // If branch/plant changed, we need to rebuild the tree
+                        // If branch/plant changed, rebuild the tree
                         if (deviceDialog.SelectedBranch != node.Branch ||
                             deviceDialog.SelectedPlant != node.Plant)
                         {

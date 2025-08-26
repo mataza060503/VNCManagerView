@@ -16,7 +16,7 @@ namespace VNCManagerView
         private List<Branch> _branches;
         private Device _originalDevice;
 
-        public DeviceDialog(List<Branch> branches, Device device = null)
+        public DeviceDialog(List<Branch> branches, Device device = null, Branch targetBranch = null, Plant targetPlant = null)
         {
             InitializeComponent();
             _branches = branches;
@@ -64,13 +64,30 @@ namespace VNCManagerView
                 Device = new Device { Port = 5900 }; // Default VNC port
                 PortTextBox.Text = "5900";
 
-                // Select first branch and first plant by default
-                if (_branches.Count > 0)
+                if (targetBranch != null && targetPlant != null)
                 {
-                    BranchComboBox.SelectedIndex = 0;
-                    if (((Branch)BranchComboBox.SelectedItem).Plants.Count > 0)
+                    // Pre-select the target branch and plant where Add was clicked
+                    BranchComboBox.SelectedItem = targetBranch;
+                    SelectedBranch = targetBranch;
+                    PlantComboBox.ItemsSource = targetBranch.Plants;
+                    PlantComboBox.SelectedItem = targetPlant;
+                    SelectedPlant = targetPlant;
+                }
+                else
+                {
+                    // Fallback: Select first branch and first plant by default
+                    if (_branches.Count > 0)
                     {
-                        PlantComboBox.SelectedIndex = 0;
+                        var firstBranch = _branches[0];
+                        BranchComboBox.SelectedItem = firstBranch;
+                        SelectedBranch = firstBranch;
+                        PlantComboBox.ItemsSource = firstBranch.Plants;
+
+                        if (firstBranch.Plants.Count > 0)
+                        {
+                            PlantComboBox.SelectedItem = firstBranch.Plants[0];
+                            SelectedPlant = firstBranch.Plants[0];
+                        }
                     }
                 }
             }
@@ -78,8 +95,15 @@ namespace VNCManagerView
             // Apply entrance animation
             ApplyEntranceAnimation();
 
-            // Focus the first control
-            Loaded += (s, e) => BranchComboBox.Focus();
+            // Focus the first control - focus name textbox in add mode since branch/plant are pre-selected
+            if (device == null && targetBranch != null && targetPlant != null)
+            {
+                Loaded += (s, e) => NameTextBox.Focus();
+            }
+            else
+            {
+                Loaded += (s, e) => BranchComboBox.Focus();
+            }
         }
 
         private void BranchComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
