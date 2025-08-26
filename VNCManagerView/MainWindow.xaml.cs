@@ -227,8 +227,8 @@ namespace VNCManagerView
             var colors = new[]
             {
                 Color.FromRgb(46, 204, 113),   // Green - Online
-                Color.FromRgb(241, 196, 15),   // Yellow - Warning
-                Color.FromRgb(231, 76, 60)     // Red - Offline
+                //Color.FromRgb(241, 196, 15),   // Yellow - Warning
+                //Color.FromRgb(231, 76, 60)     // Red - Offline
             };
             return new SolidColorBrush(colors[random.Next(colors.Length)]);
         }
@@ -469,31 +469,26 @@ private void RestoreParentExpansionStates(TreeNodeViewModel node, Dictionary<Tre
                 case NodeType.Plant:
                     var deviceDialog = new DeviceDialog(GetCurrentBranches()) { Owner = this };
                     if (deviceDialog.ShowDialog() == true)
-                    {
-                        // Add to selected plant
-                        deviceDialog.SelectedPlant.AddDevice(deviceDialog.Device);
-
-                        // Create new node and add to tree
-                        var newDeviceNode = new TreeNodeViewModel
-                        {
-                            Name = deviceDialog.Device.Name,
-                            Type = NodeType.Device,
-                            Device = deviceDialog.Device,
-                            Plant = deviceDialog.SelectedPlant,
-                            Branch = deviceDialog.SelectedBranch,
-                            Icon = "💻",
-                            IconBackground = new SolidColorBrush(Color.FromRgb(52, 73, 94)),
-                            StatusColor = GetDeviceStatusColor(deviceDialog.Device),
-                            ConnectionInfo = $"{deviceDialog.Device.IP}:{deviceDialog.Device.Port}",
-                            Parent = parentNode
-                        };
-
-                        // Find the plant node in the tree and add the device
-                        var plantNode = _treeNodes.SelectMany(b => b.Children)
-                                                .FirstOrDefault(p => p.Plant == deviceDialog.SelectedPlant);
-                        plantNode?.Children.Add(newDeviceNode);
-
-                        SaveConfiguration(GetCurrentBranches());
+            {
+                parentNode.Plant.Devices.Add(deviceDialog.Device);
+                
+                // Create new node and add to tree
+                var newDeviceNode = new TreeNodeViewModel
+                {
+                    Name = deviceDialog.Device.Name,
+                    Type = NodeType.Device,
+                    Device = deviceDialog.Device,
+                    Plant = parentNode.Plant,
+                    Branch = parentNode.Branch,
+                    Icon = "💻",
+                    IconBackground = new SolidColorBrush(Color.FromRgb(52, 73, 94)),
+                    StatusColor = GetDeviceStatusColor(deviceDialog.Device),
+                    ConnectionInfo = $"{deviceDialog.Device.IP}:{deviceDialog.Device.Port}",
+                    Parent = parentNode
+                };
+                
+                parentNode.Children.Add(newDeviceNode);
+                SaveConfiguration(GetCurrentBranches());
                     }
                     break;
             }
