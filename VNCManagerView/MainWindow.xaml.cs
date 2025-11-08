@@ -551,6 +551,11 @@ namespace VNCManagerView
                             deviceDialog.SelectedPlant.AddDevice(deviceDialog.Device);
                         }
 
+                        node.Device.Name = deviceDialog.Device.Name;
+                        node.Device.IP = deviceDialog.Device.IP;
+                        node.Device.Port = deviceDialog.Device.Port;
+                        node.Device.Password = deviceDialog.Device.Password;
+
                         node.UpdateFromDevice(deviceDialog.Device);
                         SaveConfiguration(GetCurrentBranches());
 
